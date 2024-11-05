@@ -29,9 +29,11 @@ extern void *memcpy(void *dst, const void *src, size_t n);
 extern size_t strlen_wide(const char_t *str);
 #define strlen strlen_wide
 
+#ifndef _MSC_VER
 extern void *malloc(size_t size);
-
 extern void *calloc(size_t num, size_t size);
+extern void free(void *mem);
+#endif
 
 extern char_t *strcat_wide(char_t *dst, const char_t *src);
 #define strcat strcat_wide
@@ -47,8 +49,6 @@ extern void *dlsym(void *handle, const char *name);
 #define RTLD_LAZY 0x00001
 
 extern void *dlopen(const char_t *filename, int flag);
-
-extern void free(void *mem);
 
 extern int setenv(const char_t *name, const char_t *value, int overwrite);
 extern char_t *getenv_wide(const char_t *name);

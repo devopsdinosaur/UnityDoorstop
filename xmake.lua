@@ -1,4 +1,4 @@
-includes("info.lua")
+
 local info = build_info(info_lua)
 
 add_rules("mode.debug", "mode.release")

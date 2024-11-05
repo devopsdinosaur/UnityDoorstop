@@ -27,8 +27,6 @@ void *dlsym(void *handle, const char *name) {
 
 void *dlopen(const char_t *filename, int flag) { return LoadLibrary(filename); }
 
-void free(void *mem) { HeapFree(h_heap, 0, mem); }
-
 int setenv(const char_t *name, const char_t *value, int overwrite) {
     return !SetEnvironmentVariable(name, value);
 }
@@ -40,6 +38,7 @@ size_t strlen_wide(char_t const *str) {
     return result;
 }
 
+#ifndef _MSC_VER
 void *malloc(size_t size) {
     return HeapAlloc(h_heap, HEAP_GENERATE_EXCEPTIONS, size);
 }
@@ -47,6 +46,9 @@ void *malloc(size_t size) {
 void *calloc(size_t num, size_t size) {
     return HeapAlloc(h_heap, HEAP_ZERO_MEMORY, size * num);
 }
+
+void free(void *mem) { HeapFree(h_heap, 0, mem); }
+#endif // _MSC_VER
 
 char_t *strcat_wide(char_t *dst, const char_t *src) {
     size_t size = strlen(dst);
@@ -97,7 +99,7 @@ size_t fread(void *ptr, size_t size, size_t count, void *stream) {
     return read_size;
 }
 
-int fclose(void *stream) { CloseHandle(stream); }
+int fclose(void *stream) { return (int) CloseHandle(stream); }
 
 #ifndef UNICODE
 LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc) {
