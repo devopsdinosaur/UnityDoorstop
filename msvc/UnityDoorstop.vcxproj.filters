@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{1b00d93a-ffc2-455f-8be0-1a6b516099f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\config">
+      <UniqueIdentifier>{b5799b64-cb0e-4046-8e5e-2ecb004711c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\runtimes">
+      <UniqueIdentifier>{c0e03161-3ec4-415f-811f-ee2c1d729b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\util">
+      <UniqueIdentifier>{8c1000ef-ae4c-4bfc-be56-8d6fccea2bb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows">
+      <UniqueIdentifier>{9d568a48-6441-4e83-957e-04f9a16ccf57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows\build_tools">
+      <UniqueIdentifier>{b0201159-da79-45d6-9df0-94a011c6c595}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows\proxy">
+      <UniqueIdentifier>{6146b1e0-f999-4e01-b461-fbd9f423149d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="msvc">
+      <UniqueIdentifier>{24af53db-d44e-484d-a9ac-8e2c5220622a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\config\common.c">
+      <Filter>src\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\runtimes\globals.c">
+      <Filter>src\runtimes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\util\paths.c">
+      <Filter>src\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\logger.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\util.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\config.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\entrypoint.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bootstrap.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\windows\wincrt.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\config\config.h">
+      <Filter>src\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\runtimes\func_import.h">
+      <Filter>src\runtimes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\runtimes\il2cpp.h">
+      <Filter>src\runtimes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\runtimes\mono.h">
+      <Filter>src\runtimes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\runtimes\coreclr.h">
+      <Filter>src\runtimes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\util\paths.h">
+      <Filter>src\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\util\util.h">
+      <Filter>src\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\util\logging.h">
+      <Filter>src\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\logger.h">
+      <Filter>src\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\entrypoint.h">
+      <Filter>src\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\hook.h">
+      <Filter>src\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\proxy\proxy.h">
+      <Filter>src\windows\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bootstrap.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\crt.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\windows\build_tools\dll.def.in">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\src\windows\build_tools\info.rc.in">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\src\windows\build_tools\proxy.c.in">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\src\windows\build_tools\proxygen.lua">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\src\windows\build_tools\rcgen.lua">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\src\windows\build_tools\util.lua">
+      <Filter>src\windows\build_tools</Filter>
+    </None>
+    <None Include="..\xmake.lua" />
+    <None Include="msvc-generate-code.lua">
+      <Filter>msvc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\src\windows\proxy\proxylist.txt">
+      <Filter>src\windows\proxy</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
