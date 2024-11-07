@@ -56,15 +56,9 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
 
-    char_t *current_assembly;
-    //char_t *assembly1 = TEXT("BepInEx\\core\\BepInEx.Preloader.dll");
-    //char_t *assembly2 = TEXT("system_test\\devopsdinosaur.dno.system_test.dll");
-    char_t **assembly_names;
-    
-    return;
-
-    for (int index = 0; index < 2; index++) {
-        current_assembly = assembly_names[index];
+    char_t* current_assembly;
+    for (config.assembly_index = 0; config.assembly_index < config.num_assemblies; config.assembly_index++) {
+        current_assembly = config.target_assemblies[config.assembly_index];
         LOG("Opening assembly: %s", current_assembly);
         void *file = fopen(current_assembly, "r");
         if (!file) {

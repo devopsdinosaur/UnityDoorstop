@@ -16,8 +16,8 @@ extern char_t buffer[4096];
 #endif
 
 static inline void init_logger() {
-    //printf(buffer, TEXT("doorstop_%lx.log"), GetTickCount());
-    printf(buffer, TEXT("doorstop.log"));
+    printf(buffer, TEXT("doorstop_%lx.log"), GetTickCount());
+    //printf(buffer, TEXT("doorstop.log"));
     log_handle = CreateFile(buffer, GENERIC_WRITE, FILE_SHARE_READ, NULL,
                             CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 }

@@ -58,10 +58,6 @@ void load_path_file(const char_t *path, const char_t *section,
     free(tmp);
 }
 
-void check_assembly_path() {
-    
-}
-
 static inline void init_config_file() {
     if (!file_exists(CONFIG_NAME))
         return;
@@ -75,7 +71,7 @@ static inline void init_config_file() {
     load_bool_file(config_path, TEXT("General"), TEXT("redirect_output_log"),
                    TEXT("false"), &config.redirect_output_log);
     char_t *target_assembly;
-    load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
+    load_str_file(config_path, TEXT("General"), TEXT("target_assembly"),
                    DEFAULT_TARGET_ASSEMBLY, &target_assembly);
     parse_target_assembly_string(target_assembly);
     free(target_assembly);
@@ -96,7 +92,7 @@ static inline void init_config_file() {
                    &config.clr_runtime_coreclr_path);
     load_path_file(config_path, TEXT("Il2Cpp"), TEXT("corlib_dir"), NULL,
                    &config.clr_corlib_dir);
-
+    
     free(config_path);
 }
 
@@ -148,15 +144,18 @@ static inline void init_cmd_args() {
     if (parser(argv, &i, argc, name, &(dest)))                                 \
         continue;
 
+    char_t *target_assembly = NULL;
     for (int i = 0; i < argc; i++) {
         PARSE_ARG(TEXT("--doorstop-enabled"), config.enabled, load_bool_argv);
         PARSE_ARG(TEXT("--doorstop-redirect-output-log"),
                   config.redirect_output_log, load_bool_argv);
-        char_t *target_assembly;
         PARSE_ARG(TEXT("--doorstop-target-assembly"), target_assembly,
                   load_path_argv);
-        parse_target_assembly_string(target_assembly);
-        free(target_assembly);
+        if (target_assembly != NULL) {
+            parse_target_assembly_string(target_assembly);
+            free(target_assembly);
+            target_assembly = NULL;
+        }
         PARSE_ARG(TEXT("--doorstop-boot-config-override"),
                   config.boot_config_override, load_path_argv);
 
@@ -174,7 +173,7 @@ static inline void init_cmd_args() {
         PARSE_ARG(TEXT("--doorstop-clr-runtime-coreclr-path"),
                   config.clr_runtime_coreclr_path, load_path_argv);
     }
-
+    
     LocalFree(argv);
 
 #undef PARSE_ARG
@@ -196,9 +195,9 @@ void load_config() {
     init_env_vars();
 }
 
-static inline void parse_target_assembly_string(char_t *target_assembly) {
+void parse_target_assembly_string(char_t *target_assembly) {
 #define MAX_ASSEMBLIES 256
-    LOG("parse_target_assembly_string - %s", target_assembly);
+    LOG("Parsing target_assembly string for multiple paths / directories.");
     config.num_assemblies = 0;
     config.target_assemblies = (char_t **) malloc(sizeof(char_t *) * MAX_ASSEMBLIES);
     char_t *current_string = target_assembly;
@@ -218,30 +217,34 @@ static inline void parse_target_assembly_string(char_t *target_assembly) {
             original_char = target_assembly[src_index];
             target_assembly[src_index] = '\0';
             if (src_index - start_index > 2) {
-                LOG("current_string: %s", current_string);
                 if (current_string[1] != ':') {
                     strcpy(&full_path[len_cwd], current_string);
                     current_string = full_path;
                 }
                 if (folder_exists(current_string)) {
-                    LOG("folder: '%s'", current_string);
+                    LOG("--> searching directory: '%s'", current_string);
+                    size_t len_current_string = strlen(current_string) + 1;
                     WIN32_FIND_DATA find_data;
                     strcat(current_string, TEXT("\\*.dll"));
                     HANDLE h_find = FindFirstFile(current_string, &find_data);
-                    size_t len_current_string = 
+                    current_string[len_current_string] = '\0';
                     while (h_find != INVALID_HANDLE_VALUE) {
                         config.target_assemblies[config.num_assemblies] = (char_t *) malloc(sizeof(char_t) * MAX_PATH);
-                        strcpy(config.target_assemblies[config.num_assemblies], find_data.cFileName);
-                        LOG("file: '%s'", config.target_assemblies[config.num_assemblies]);
+                        strcpy(config.target_assemblies[config.num_assemblies], current_string);
+                        strcpy(&config.target_assemblies[config.num_assemblies][len_current_string], find_data.cFileName);
+                        LOG("   .. found assembly: '%s'", config.target_assemblies[config.num_assemblies]);
                         config.num_assemblies++;
-                        h_find = FindNextFile(h_find, &find_data);
+                        if (FindNextFile(h_find, &find_data) == 0) {
+                            break;
+                        }
                     }
                 } else if (file_exists(current_string)) {
                     config.target_assemblies[config.num_assemblies] = (char_t *) malloc(sizeof(char_t) * MAX_PATH);
                     strcpy(config.target_assemblies[config.num_assemblies], current_string);
+                    LOG("--> added assembly: '%s'", config.target_assemblies[config.num_assemblies]);
                     config.num_assemblies++;
                 } else {
-                    LOG("Assembly '%s' not found.", current_string);
+                    LOG("Assembly / directory '%s' not found.  Be sure to remove any spaces before and after path separators (;).", current_string);
                 }
             }
             if (original_char == '\0') {
@@ -251,6 +254,5 @@ static inline void parse_target_assembly_string(char_t *target_assembly) {
             full_path[len_cwd] = '\0';
         }
     }
-    int *p = 0;
-    *p = 1;
+    LOG("Parsed %d assembly paths.", config.num_assemblies);
 }
