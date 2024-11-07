@@ -4,6 +4,7 @@
 #include "../util/util.h"
 
 #define CONFIG_NAME TEXT("doorstop_config.ini")
+#define DEFAULT_PATH_SEPARATOR TEXT(";")
 #define DEFAULT_TARGET_ASSEMBLY TEXT("Doorstop.dll")
 #define EXE_EXTENSION_LENGTH 4
 #define STR_EQUAL(str1, str2) (lstrcmpi(str1, str2) == 0)
@@ -57,6 +58,10 @@ void load_path_file(const char_t *path, const char_t *section,
     free(tmp);
 }
 
+void check_assembly_path() {
+    
+}
+
 static inline void init_config_file() {
     if (!file_exists(CONFIG_NAME))
         return;
@@ -69,8 +74,11 @@ static inline void init_config_file() {
                    TEXT("false"), &config.ignore_disabled_env);
     load_bool_file(config_path, TEXT("General"), TEXT("redirect_output_log"),
                    TEXT("false"), &config.redirect_output_log);
+    char_t *target_assembly;
     load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
-                   DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
+                   DEFAULT_TARGET_ASSEMBLY, &target_assembly);
+    parse_target_assembly_string(target_assembly);
+    free(target_assembly);
     load_path_file(config_path, TEXT("General"), TEXT("boot_config_override"),
                    NULL, &config.boot_config_override);
 
@@ -144,8 +152,11 @@ static inline void init_cmd_args() {
         PARSE_ARG(TEXT("--doorstop-enabled"), config.enabled, load_bool_argv);
         PARSE_ARG(TEXT("--doorstop-redirect-output-log"),
                   config.redirect_output_log, load_bool_argv);
-        PARSE_ARG(TEXT("--doorstop-target-assembly"), config.target_assembly,
+        char_t *target_assembly;
+        PARSE_ARG(TEXT("--doorstop-target-assembly"), target_assembly,
                   load_path_argv);
+        parse_target_assembly_string(target_assembly);
+        free(target_assembly);
         PARSE_ARG(TEXT("--doorstop-boot-config-override"),
                   config.boot_config_override, load_path_argv);
 
@@ -183,4 +194,55 @@ void load_config() {
     init_config_file();
     init_cmd_args();
     init_env_vars();
+}
+
+static inline void parse_target_assembly_string(char_t *target_assembly) {
+#define MAX_ASSEMBLIES 256
+    LOG("parse_target_assembly_string - %s", target_assembly);
+    config.num_assemblies = 0;
+    config.target_assemblies = (char_t **) malloc(sizeof(char_t *) * MAX_ASSEMBLIES);
+    char_t *current_string = target_assembly;
+    size_t start_index = 0;
+    char_t original_char;
+    DWORD len_cwd;
+    if ((len_cwd = GetCurrentDirectory(0, NULL)) == 0) {
+        LOG("WARNING: Unable to retrieve current directory.  Cannot parse target assembly/ies.");
+        return;
+    }
+    char_t full_path[MAX_PATH];
+    GetCurrentDirectory(len_cwd, full_path);
+    full_path[len_cwd - 1] = '\\';
+    full_path[len_cwd] = '\0';
+    for (size_t src_index = 0; ; src_index++) {
+        if (target_assembly[src_index] == ';' || target_assembly[src_index] == '\0') {
+            original_char = target_assembly[src_index];
+            target_assembly[src_index] = '\0';
+            if (src_index - start_index > 2) {
+                LOG("current_string: %s", current_string);
+                if (current_string[1] != ':') {
+                    strcpy(&full_path[len_cwd], current_string);
+                    current_string = full_path;
+                    LOG("full_path: %s", current_string);
+                }
+                if (folder_exists(current_string)) {
+                    LOG("folder");
+                } else if (file_exists(current_string)) {
+                    LOG("file");
+                    config.target_assemblies[config.num_assemblies] = (char_t *) malloc(sizeof(char_t) * MAX_PATH);
+                    strcpy(config.target_assemblies[config.num_assemblies], current_string);
+                    LOG("thing: '%s'", config.target_assemblies[config.num_assemblies]);
+                    config.num_assemblies++;
+                } else {
+                    LOG("Assembly '%s' not found.", current_string);
+                }
+            }
+            if (original_char == '\0') {
+                break;
+            }
+            current_string = &target_assembly[(start_index = src_index + 1)];
+            full_path[len_cwd] = '\0';
+        }
+    }
+    int *p = 0;
+    *p = 1;
 }

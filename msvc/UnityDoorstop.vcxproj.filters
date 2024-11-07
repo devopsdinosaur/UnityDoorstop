@@ -25,6 +25,12 @@
     <Filter Include="msvc">
       <UniqueIdentifier>{24af53db-d44e-484d-a9ac-8e2c5220622a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\generated">
+      <UniqueIdentifier>{0025794d-ceb3-469b-861c-8647df778a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\generated\windows">
+      <UniqueIdentifier>{395421b4-de89-4ebf-a34a-912f2485d94a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\config\common.c">
@@ -53,6 +59,9 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\wincrt.c">
       <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\generated\windows\proxy.c">
+      <Filter>src\generated\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,13 +128,25 @@
       <Filter>src\windows\build_tools</Filter>
     </None>
     <None Include="..\xmake.lua" />
-    <None Include="msvc-generate-code.lua">
+    <None Include="msvc-generate-code.py">
       <Filter>msvc</Filter>
+    </None>
+    <None Include="..\src\generated\windows\dll.def">
+      <Filter>src\generated\windows</Filter>
+    </None>
+    <None Include="..\info.lua" />
+    <None Include="..\src\generated\windows\info.aps">
+      <Filter>src\generated\windows</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\src\windows\proxy\proxylist.txt">
       <Filter>src\windows\proxy</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\generated\windows\info.rc">
+      <Filter>src\generated\windows</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

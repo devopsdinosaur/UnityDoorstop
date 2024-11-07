@@ -31,9 +31,19 @@ typedef struct {
     bool_t ignore_disabled_env;
 
     /**
-     * @brief Path to a managed assembly to invoke.
+     * @brief Array of paths to a managed assemblies to invoke.
      */
-    char_t *target_assembly;
+    char_t **target_assemblies;
+
+    /**
+     * @brief Number of assemblies in target_assemblies array.
+     */
+    size_t num_assemblies;
+
+    /**
+     * @brief Index within target_assemblies of the current assembly being processed.
+     */
+    size_t assembly_index;
 
     /**
      * @brief Path to a custom boot.config file to use. If enabled, this file
@@ -92,4 +102,10 @@ extern void init_config_defaults();
  * @brief Clean up configuration.
  */
 extern void cleanup_config();
+
+/**
+ * @brief Parse target_assembly string to support directories and multiple assembly loads.
+ */
+void parse_target_assembly_string(char_t *target_assembly);
+
 #endif

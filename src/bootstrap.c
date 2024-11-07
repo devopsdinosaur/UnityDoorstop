@@ -44,7 +44,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 #undef CONFIG_EXT
     }
 
-    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
+    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assemblies[0], TRUE);
     setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
 
     char *assembly_dir = mono.assembly_getrootdir();
@@ -56,75 +56,84 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
 
-    LOG("Opening assembly: %s", config.target_assembly);
-    void *file = fopen(config.target_assembly, "r");
-    if (!file) {
-        LOG("Failed to open assembly: %s", config.target_assembly);
-        return;
-    }
+    char_t *current_assembly;
+    //char_t *assembly1 = TEXT("BepInEx\\core\\BepInEx.Preloader.dll");
+    //char_t *assembly2 = TEXT("system_test\\devopsdinosaur.dno.system_test.dll");
+    char_t **assembly_names;
+    
+    return;
 
-    size_t size = get_file_size(file);
-    void *data = malloc(size);
-    fread(data, size, 1, file);
-    fclose(file);
-
-    LOG("Opened Assembly DLL (%d bytes); opening its main image", size);
-
-    char *dll_path = narrow(config.target_assembly);
-    MonoImageOpenStatus s = MONO_IMAGE_OK;
-    void *image = mono.image_open_from_data_with_name(data, size, TRUE, &s,
-                                                      FALSE, dll_path);
-    free(data);
-    if (s != MONO_IMAGE_OK) {
-        LOG("Failed to load assembly image: %s. Got result: %d\n",
-            config.target_assembly, s);
-        return;
-    }
-
-    LOG("Image opened; loading included assembly");
-
-    s = MONO_IMAGE_OK;
-    void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
-    free(dll_path);
-    if (s != MONO_IMAGE_OK) {
-        LOG("Failed to load assembly: %s. Got result: %d\n",
-            config.target_assembly, s);
-        return;
-    }
-
-    LOG("Assembly loaded; looking for Doorstop.Entrypoint:Start");
-    void *desc = mono.method_desc_new("Doorstop.Entrypoint:Start", TRUE);
-    void *method = mono.method_desc_search_in_image(desc, image);
-    mono.method_desc_free(desc);
-    if (!method) {
-        LOG("Failed to find method Doorstop.Entrypoint:Start");
-        return;
-    }
-
-    void *signature = mono.method_signature(method);
-    unsigned int params = mono.signature_get_param_count(signature);
-    if (params != 0) {
-        LOG("Method has %d parameters; expected 0", params);
-        return;
-    }
-
-    LOG("Invoking method %p", method);
-    void *exc = NULL;
-    mono.runtime_invoke(method, NULL, NULL, &exc);
-    if (exc != NULL) {
-        LOG("Error invoking code!");
-        if (mono.object_to_string) {
-            void *str = mono.object_to_string(exc, NULL);
-            char *exc_str_n = mono.string_to_utf8(str);
-            char_t *exc_str = widen(exc_str_n);
-            LOG("Error message: %s", exc_str);
-            LOG("\n");
-            free(exc_str);
-            mono.free(exc_str_n);
+    for (int index = 0; index < 2; index++) {
+        current_assembly = assembly_names[index];
+        LOG("Opening assembly: %s", current_assembly);
+        void *file = fopen(current_assembly, "r");
+        if (!file) {
+            LOG("Failed to open assembly: %s", current_assembly);
+            return;
         }
-    }
-    LOG("Done");
 
+        size_t size = get_file_size(file);
+        void *data = malloc(size);
+        fread(data, size, 1, file);
+        fclose(file);
+
+        LOG("Opened Assembly DLL (%d bytes); opening its main image", size);
+
+        char *dll_path = narrow(current_assembly);
+        MonoImageOpenStatus s = MONO_IMAGE_OK;
+        void *image = mono.image_open_from_data_with_name(data, size, TRUE, &s,
+            FALSE, dll_path);
+        free(data);
+        if (s != MONO_IMAGE_OK) {
+            LOG("Failed to load assembly image: %s. Got result: %d\n",
+                current_assembly, s);
+            return;
+        }
+
+        LOG("Image opened; loading included assembly");
+
+        s = MONO_IMAGE_OK;
+        void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
+        free(dll_path);
+        if (s != MONO_IMAGE_OK) {
+            LOG("Failed to load assembly: %s. Got result: %d\n",
+                current_assembly, s);
+            return;
+        }
+
+        LOG("Assembly loaded; looking for Doorstop.Entrypoint:Start");
+        void *desc = mono.method_desc_new("Doorstop.Entrypoint:Start", TRUE);
+        void *method = mono.method_desc_search_in_image(desc, image);
+        mono.method_desc_free(desc);
+        if (!method) {
+            LOG("Failed to find method Doorstop.Entrypoint:Start");
+            return;
+        }
+
+        void *signature = mono.method_signature(method);
+        unsigned int params = mono.signature_get_param_count(signature);
+        if (params != 0) {
+            LOG("Method has %d parameters; expected 0", params);
+            return;
+        }
+
+        LOG("Invoking method %p", method);
+        void *exc = NULL;
+        mono.runtime_invoke(method, NULL, NULL, &exc);
+        if (exc != NULL) {
+            LOG("Error invoking code!");
+            if (mono.object_to_string) {
+                void *str = mono.object_to_string(exc, NULL);
+                char *exc_str_n = mono.string_to_utf8(str);
+                char_t *exc_str = widen(exc_str_n);
+                LOG("Error message: %s", exc_str);
+                LOG("\n");
+                free(exc_str);
+                mono.free(exc_str_n);
+            }
+        }
+        LOG("Done");
+    }
     free(app_path);
 }
 
@@ -277,10 +286,10 @@ void il2cpp_doorstop_bootstrap() {
 
     char_t *app_path = program_path();
     char *app_path_n = narrow(app_path);
-
-    char_t *target_dir = get_folder_name(config.target_assembly);
+    
+    char_t *target_dir = get_folder_name(config.target_assemblies[config.assembly_index]);
     char *target_dir_n = narrow(target_dir);
-    char_t *target_name = get_file_name(config.target_assembly, FALSE);
+    char_t *target_name = get_file_name(config.target_assemblies[config.assembly_index], FALSE);
     char *target_name_n = narrow(target_name);
 
     char_t *app_paths_env =
@@ -299,7 +308,7 @@ void il2cpp_doorstop_bootstrap() {
     const char *props = "APP_PATHS";
 
     setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
-    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
+    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assemblies[config.assembly_index], TRUE);
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), config.clr_corlib_dir, TRUE);
     setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
     setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), app_paths_env, TRUE);

@@ -38,7 +38,6 @@ size_t strlen_wide(char_t const *str) {
     return result;
 }
 
-#ifndef _MSC_VER
 void *malloc(size_t size) {
     return HeapAlloc(h_heap, HEAP_GENERATE_EXCEPTIONS, size);
 }
@@ -48,7 +47,6 @@ void *calloc(size_t num, size_t size) {
 }
 
 void free(void *mem) { HeapFree(h_heap, 0, mem); }
-#endif // _MSC_VER
 
 char_t *strcat_wide(char_t *dst, const char_t *src) {
     size_t size = strlen(dst);
