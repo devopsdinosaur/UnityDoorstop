@@ -222,15 +222,23 @@ static inline void parse_target_assembly_string(char_t *target_assembly) {
                 if (current_string[1] != ':') {
                     strcpy(&full_path[len_cwd], current_string);
                     current_string = full_path;
-                    LOG("full_path: %s", current_string);
                 }
                 if (folder_exists(current_string)) {
-                    LOG("folder");
+                    LOG("folder: '%s'", current_string);
+                    WIN32_FIND_DATA find_data;
+                    strcat(current_string, TEXT("\\*.dll"));
+                    HANDLE h_find = FindFirstFile(current_string, &find_data);
+                    size_t len_current_string = 
+                    while (h_find != INVALID_HANDLE_VALUE) {
+                        config.target_assemblies[config.num_assemblies] = (char_t *) malloc(sizeof(char_t) * MAX_PATH);
+                        strcpy(config.target_assemblies[config.num_assemblies], find_data.cFileName);
+                        LOG("file: '%s'", config.target_assemblies[config.num_assemblies]);
+                        config.num_assemblies++;
+                        h_find = FindNextFile(h_find, &find_data);
+                    }
                 } else if (file_exists(current_string)) {
-                    LOG("file");
                     config.target_assemblies[config.num_assemblies] = (char_t *) malloc(sizeof(char_t) * MAX_PATH);
                     strcpy(config.target_assemblies[config.num_assemblies], current_string);
-                    LOG("thing: '%s'", config.target_assemblies[config.num_assemblies]);
                     config.num_assemblies++;
                 } else {
                     LOG("Assembly '%s' not found.", current_string);
